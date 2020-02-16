@@ -1,10 +1,12 @@
 const Discord = require("discord.js");
 const config = require("./config.json");
+const fs = require("fs");
+
 const client = new Discord.Client();
 
 const { prefix } = config;
 
-const bets = {};
+const bets = loadBetData();
 
 client.once("ready", () => {
   console.log("Ready!");
@@ -17,9 +19,7 @@ client.once("ready", () => {
 
     if (command === "!dump") {
       message.channel.send("daddy.");
-    } else if (command == "style") {
-      message.channel.send({ embed: betEmbed });
-    } else if (command === "bet") {
+    } else if (command === "bet" || command === "bets") {
       message.channel.send({ embed: sendBetInfo(args, bets) });
     }
   });
@@ -59,7 +59,7 @@ function sendBetInfo(args, bets) {
     }
 
     bets[person].profit += bet;
-
+    saveBetData(bets);
     return formatBetMessage({ person: bets[person] });
   }
 }
@@ -68,12 +68,7 @@ function formatBetMessage(bets) {
   const betEmbed = {
     color: 0x0099ff,
     title: "Bet Update",
-    fields: [
-      {
-        name: "Regular field title",
-        value: "Some value here"
-      }
-    ]
+    fields: []
   };
 
   for (let [person, stats] of Object.entries(bets)) {
@@ -85,4 +80,18 @@ function formatBetMessage(bets) {
   }
 
   return betEmbed;
+}
+
+function loadBetData() {
+  let rawdata = fs.readFileSync("bets.json");
+  let bets = JSON.parse(rawdata);
+  return bets;
+}
+
+function saveBetData(bets) {
+  fs.writeFile("./bets.json", JSON.stringify(bets), "utf-8", function(err) {
+    if (err) {
+      // do nothing
+    }
+  });
 }
