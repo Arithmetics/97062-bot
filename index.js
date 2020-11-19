@@ -12,16 +12,31 @@ client.once("ready", () => {
   console.log("Ready!");
 
   client.on("message", message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+ 
+    const allEmojies = message.guild.emojis
 
-    const args = message.content.slice(prefix.length).split(/ +/);
-    const command = args.shift().toLowerCase();
+    const entries = [...allEmojies.entries()]
 
-    if (command === "!dump") {
-      message.channel.send("daddy.");
-    } else if (command === "bet" || command === "bets") {
-      message.channel.send({ embed: sendBetInfo(args, bets) });
+    const fakeNews = entries.find(emoji => emoji[1].name === 'fakenews')[1];
+
+    // User {id: '111938054297505792', username: 'Jerms', discriminator: '0186', avatar: '6292889dc4d2cc4e9a52eec3b677e0fb', bot: false, …}
+
+    // User {id: '306086225016782849', username: 'Arithmetics', discriminator: '2625', avatar: '6882e5a5c21666e8f2fce85bc23071db', bot: false, …}
+
+    if (message.author.id === '111938054297505792') {
+      message.react(fakeNews)
     }
+
+    // if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    // const args = message.content.slice(prefix.length).split(/ +/);
+    // const command = args.shift().toLowerCase();
+
+    // if (command === "!dump") {
+    //   message.channel.send("daddy.");
+    // } else if (command === "bet" || command === "bets") {
+    //   message.channel.send({ embed: sendBetInfo(args, bets) });
+    // }
   });
 });
 
