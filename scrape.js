@@ -25,6 +25,10 @@ function parseGames(html) {
             .find(".rj-ev-list__ev-card__team-2-name")
             .text();
 
+          const gameState = $(game)
+            .find(".rj-ev-list__ev-card__game-state")
+            .text();
+
           const betBlocks = $(game).find(".rj-ev-list__bet-btn__row");
 
           const awayLine = $(betBlocks[0]).find("span").text();
@@ -32,11 +36,12 @@ function parseGames(html) {
           const over = $(betBlocks[10]).find("span").text();
 
           availableGames.push({
-            headerText,
+            date,
             awayTeam,
             homeTeam,
             awayLine,
             over,
+            gameState,
           });
         } catch (e) {
           console.log(e);
@@ -51,13 +56,15 @@ function parseGames(html) {
 }
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: false });
+  // const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({});
   const page = await browser.newPage();
   await page.goto(url);
   await page.waitForSelector(".league-events-block");
   await new Promise((r) => setTimeout(r, 2000));
   const content = await page.content();
-  parseGames(content);
+  const games = parseGames(content);
+  console.log(games);
 
   await browser.close();
 })();

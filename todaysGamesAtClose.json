@@ -1,0 +1,23 @@
+[
+  {
+    "awayTeam": "OKC Thunder",
+    "homeTeam": "UTA Jazz",
+    "awayLine": 16.5,
+    "overLine": 221.5
+  },
+  {
+    "awayTeam": "MIA Heat",
+    "homeTeam": "PHO Suns",
+    "awayLine": 3.5,
+    "overLine": 217.5
+  },
+  {
+    "awayTeam": "BOS Celtics",
+    "homeTeam": "POR Trail Blazers",
+    "awayLine": 1.5,
+    "overLine": 229,
+    "quarter": 3,
+    "minute": 2
+  },
+  { "awayTeam": "XXXX", "homeTeam": "YYYY", "awayLine": 1.5, "overLine": 900 }
+]
