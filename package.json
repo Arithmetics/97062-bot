@@ -4,5 +4,9 @@
   },
   "devDependencies": {
     "cypress": "^7.0.1"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.6",
+    "puppeteer": "^8.0.0"
   }
 }
