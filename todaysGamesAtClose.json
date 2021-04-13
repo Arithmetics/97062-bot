@@ -1,5 +1,23 @@
 [
   {
+    "awayTeam": "ATL Hawks",
+    "homeTeam": "TOR Raptors",
+    "awayLine": 1,
+    "overLine": 221
+  },
+  {
+    "awayTeam": "LA Clippers",
+    "homeTeam": "IND Pacers",
+    "awayLine": -3,
+    "overLine": 233
+  },
+  {
+    "awayTeam": "LA Lakers",
+    "homeTeam": "CHA Hornets",
+    "awayLine": -1,
+    "overLine": 206
+  },
+  {
     "awayTeam": "OKC Thunder",
     "homeTeam": "UTA Jazz",
     "awayLine": 16.5,
@@ -8,16 +26,13 @@
   {
     "awayTeam": "MIA Heat",
     "homeTeam": "PHO Suns",
-    "awayLine": 3.5,
+    "awayLine": 3,
     "overLine": 217.5
   },
   {
     "awayTeam": "BOS Celtics",
     "homeTeam": "POR Trail Blazers",
-    "awayLine": 1.5,
-    "overLine": 229,
-    "quarter": 3,
-    "minute": 2
-  },
-  { "awayTeam": "XXXX", "homeTeam": "YYYY", "awayLine": 1.5, "overLine": 900 }
+    "awayLine": 1,
+    "overLine": 229
+  }
 ]

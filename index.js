@@ -6,107 +6,82 @@ const client = new Discord.Client();
 
 const { prefix } = config;
 
-const bets = loadBetData();
-
 client.once("ready", () => {
   console.log("Ready!");
 
-  client.on("message", message => {
- 
-    const allEmojies = message.guild.emojis
-
-    const entries = [...allEmojies.entries()]
-
-    const fakeNews = entries.find(emoji => emoji[1].name === 'fakenews')[1];
-
-    // User {id: '111938054297505792', username: 'Jerms', discriminator: '0186', avatar: '6292889dc4d2cc4e9a52eec3b677e0fb', bot: false, …}
-
-    // User {id: '306086225016782849', username: 'Arithmetics', discriminator: '2625', avatar: '6882e5a5c21666e8f2fce85bc23071db', bot: false, …}
-
-    if (message.author.id === '111938054297505792') {
-      message.react(fakeNews)
+  client.on("message", (message) => {
+    if (
+      message.channel.id === "675574196268564525" &&
+      message.attachments.size > 0 &&
+      !message.author.bot
+    ) {
+      const i = Math.floor(Math.random() * haterRemarks.length);
+      const remark = haterRemarks[i];
+      message.channel.send(
+        `Looks like another bet slip from you? if so ${remark}`
+      );
+      return;
     }
 
-    // if (!message.content.startsWith(prefix) || message.author.bot) return;
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-    // const args = message.content.slice(prefix.length).split(/ +/);
-    // const command = args.shift().toLowerCase();
+    const args = message.content.slice(prefix.length).split(/ +/);
+    const command = args.shift().toLowerCase();
 
-    // if (command === "!dump") {
-    //   message.channel.send("daddy.");
-    // } else if (command === "bet" || command === "bets") {
-    //   message.channel.send({ embed: sendBetInfo(args, bets) });
-    // }
+    if (command === "lines") {
+      message.channel.send({ embed: sendLineInfo() });
+    } else if (command === "bet") {
+      // message.channel.send({ embed: sendBetInfo(args, bets) });
+    }
   });
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-function sendBetInfo(args, bets) {
-  if (args.length === 0) {
-    return formatBetMessage(bets);
-  }
-
-  if (args.length === 1) {
-    person = args[0];
-    if (bets[person]) {
-      return formatBetMessage({ person: bets[person] });
-    }
-    return `Can't find any bets for ${person}`;
-  }
-
-  if (args.length > 1) {
-    person = args[0];
-    bet = parseInt(args[1]);
-
-    if (isNaN(bet)) {
-      return "Please use format: !bet [name] [[+/-]amount]";
-    }
-
-    if (!bets[person]) {
-      bets[person] = { wins: 0, losses: 0, profit: 0 };
-    }
-
-    if (bet > 0) {
-      bets[person].wins++;
-    } else if (bet < 0) {
-      bets[person].losses++;
-    }
-
-    bets[person].profit += bet;
-    saveBetData(bets);
-    return formatBetMessage({ person: bets[person] });
-  }
+function readGamesFromFile() {
+  let rawdata = fs.readFileSync("todaysGamesAtClose.json");
+  let games = JSON.parse(rawdata);
+  return games;
 }
 
-function formatBetMessage(bets) {
-  const betEmbed = {
+function sendLineInfo() {
+  const games = readGamesFromFile();
+
+  const gameEmbed = {
     color: 0x0099ff,
-    title: "Bet Update",
-    fields: []
+    title: "Sup losers, this is what i'm seeing for todays lines",
+    fields: [],
   };
 
-  for (let [person, stats] of Object.entries(bets)) {
-    const field = {
-      name: person,
-      value: `Wins: ${stats.wins}, Losses: ${stats.losses}, Profit: ${stats.profit}`
-    };
-    betEmbed.fields.push(field);
-  }
+  games.forEach((g, i) => {
+    const pos = g.awayLine > 0;
 
-  return betEmbed;
-}
+    const sym = pos ? "+" : "";
 
-function loadBetData() {
-  let rawdata = fs.readFileSync("bets.json");
-  let bets = JSON.parse(rawdata);
-  return bets;
-}
-
-function saveBetData(bets) {
-  fs.writeFile("./bets.json", JSON.stringify(bets), "utf-8", function(err) {
-    if (err) {
-      // do nothing
-    }
+    gameEmbed.fields.push({
+      name: `Game: ${i + 1}`,
+      value: `${g.awayTeam} are ${sym}${g.awayLine} @ ${g.homeTeam}, the total is ${g.overLine}`,
+    });
   });
+  return gameEmbed;
 }
+
+const haterRemarks = [
+  "looks like bad value to me",
+  "not great",
+  "you really going to do that?",
+  "yikes",
+  "doesnt look like a winner",
+  "thats okay, if you like being poor",
+  "not your best decision",
+  "may as well burn your money",
+  "good luck!.....lol",
+  "hahahahahah....wait youre serious with that?",
+  "thats not going to win",
+  "time for you to take a break",
+  "maybe you can hedge?",
+  "that's probably soemthing youll regret later",
+  "jesus you are a MUSH",
+  "another cold streak on the way",
+  "okay I do like this one",
+];
