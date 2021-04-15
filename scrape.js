@@ -36,6 +36,14 @@ function parseGames(html) {
 
           const over = $(betBlocks[10]).find("span").text();
 
+          const awayScore = $(game)
+            .find(".rj-ev-list__ev-card__score-home")
+            .text(); // reversed for some reason
+
+          const homeScore = $(game)
+            .find(".rj-ev-list__ev-card__score-away")
+            .text(); // reversed for some reason
+
           availableGames.push({
             date,
             awayTeam,
@@ -43,6 +51,8 @@ function parseGames(html) {
             awayLine,
             over,
             gameState,
+            awayScore,
+            homeScore,
           });
         } catch (e) {
           console.log(e);
@@ -68,31 +78,36 @@ function filterAndConvert(scrapedGames) {
     return {
       awayTeam: g.awayTeam,
       homeTeam: g.homeTeam,
-      awayLine: parseFloat(g.awayLine, 10),
-      overLine: parseFloat(g.over.replace("U", ""), 10),
+      awayLine: parseFloat(g.awayLine, 10) || undefined,
+      overLine: parseFloat(g.over.replace("U", ""), 10) || undefined,
       quarter: parseInt(gameTimes[0]) || undefined,
       minute: parseInt(gameTimes[1]) || undefined,
+      awayScore: parseInt(g.awayScore) || undefined,
+      homeScore: parseInt(g.homeScore) || undefined,
     };
   });
 }
 
-function saveGamesToFile(games) {
-  fs.writeFile(
-    "./todaysGamesAtClose.json",
-    JSON.stringify(games),
-    "utf-8",
-    function (err) {
-      if (err) {
-        // do nothing
-      }
+function saveGamesToFile(games, fileName) {
+  fs.writeFile(fileName, JSON.stringify(games), "utf-8", function (err) {
+    if (err) {
+      // do nothing
     }
-  );
+  });
 }
 
 function readGamesFromFile() {
   let rawdata = fs.readFileSync("todaysGamesAtClose.json");
   let games = JSON.parse(rawdata);
   return games;
+}
+
+function keepLiveLinesUpdated(liveReadGames) {
+  const todaysLiveGames = filterAndConvert(liveReadGames);
+  const liveGames = todaysLiveGames.filter(
+    (g) => g.quarter !== undefined && g.minute !== undefined
+  );
+  saveGamesToFile(liveGames, "./liveGameLines.json");
 }
 
 function keepClosingLinesUpdated(liveReadGames) {
@@ -126,13 +141,10 @@ function keepClosingLinesUpdated(liveReadGames) {
     }
   });
 
-  saveGamesToFile(allGamesUpdated);
+  saveGamesToFile(allGamesUpdated, "./todaysGamesAtClose.json");
 }
 
-const minutes = 30;
-const interval = minutes * 60 * 1000;
-setInterval(function () {
-  console.log("I am doing my 30 minutes check");
+function scrapeAndSave() {
   (async () => {
     // const browser = await puppeteer.launch({ headless: false });
     const browser = await puppeteer.launch({});
@@ -143,7 +155,18 @@ setInterval(function () {
     const content = await page.content();
     const games = parseGames(content);
     keepClosingLinesUpdated(games);
+    keepLiveLinesUpdated(games);
 
     await browser.close();
   })();
+}
+
+const minutes = 15;
+const interval = minutes * 60 * 1000;
+setInterval(function () {
+  console.log(new Date());
+  console.log("I am doing my 15 minutes check");
+  scrapeAndSave();
 }, interval);
+
+scrapeAndSave();

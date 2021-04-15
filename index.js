@@ -17,9 +17,26 @@ client.once("ready", () => {
     ) {
       const i = Math.floor(Math.random() * haterRemarks.length);
       const remark = haterRemarks[i];
-      message.channel.send(
-        `Looks like another bet slip from you? if so ${remark}`
-      );
+      message.channel.send(`another bet slip from you? ... ${remark}`);
+      return;
+    }
+
+    if (message.mentions.has(client.user.id)) {
+      if (message.author.id === "507719783014465537") {
+        message.channel.send("kevin... youre not that cool");
+        return;
+      }
+      if (message.author.id === "111938054297505792") {
+        message.channel.send(
+          "oh looks its jerms, the coooolest guy in the chat! whoopdy do, fuck off"
+        );
+        return;
+      }
+      if (message.author.id === "306086225016782849") {
+        message.channel.send("hello!, have a great day");
+        return;
+      }
+      message.channel.send("Tag me again, see what happens!");
       return;
     }
 
@@ -30,22 +47,22 @@ client.once("ready", () => {
 
     if (command === "lines") {
       message.channel.send({ embed: sendLineInfo() });
-    } else if (command === "bet") {
-      // message.channel.send({ embed: sendBetInfo(args, bets) });
+    } else if (command === "livelines") {
+      message.channel.send({ embed: sendLiveLineInfo() });
     }
   });
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-function readGamesFromFile() {
-  let rawdata = fs.readFileSync("todaysGamesAtClose.json");
+function readGamesFromFile(file) {
+  let rawdata = fs.readFileSync(file);
   let games = JSON.parse(rawdata);
   return games;
 }
 
 function sendLineInfo() {
-  const games = readGamesFromFile();
+  const games = readGamesFromFile("todaysGamesAtClose.json");
 
   const gameEmbed = {
     color: 0x0099ff,
@@ -61,6 +78,28 @@ function sendLineInfo() {
     gameEmbed.fields.push({
       name: `Game: ${i + 1}`,
       value: `${g.awayTeam} are ${sym}${g.awayLine} @ ${g.homeTeam}, the total is ${g.overLine}`,
+    });
+  });
+  return gameEmbed;
+}
+
+function sendLiveLineInfo() {
+  const games = readGamesFromFile("liveGameLines.json");
+
+  const gameEmbed = {
+    color: 0x0099ff,
+    title: "Here's the current live lines",
+    fields: [],
+  };
+
+  games.forEach((g, i) => {
+    const pos = g.awayLine > 0;
+
+    const sym = pos ? "+" : "";
+
+    gameEmbed.fields.push({
+      name: `Game: ${i + 1}`,
+      value: `${g.awayTeam} are ${sym}${g.awayLine} @ ${g.homeTeam}, score: (${g.awayScore} - ${g.homeScore}, time: Q${g.quarter}:${g.minute})`,
     });
   });
   return gameEmbed;
@@ -84,4 +123,11 @@ const haterRemarks = [
   "jesus you are a MUSH",
   "another cold streak on the way",
   "okay I do like this one",
+  "nice value, not",
+  "hope you got this for +900",
+  "looks like a winner",
+  "your mom make this one for you?",
+  "yeeeeeeeshhhh",
+  "hoo boy",
+  "lets reduce your unit size huh?",
 ];
