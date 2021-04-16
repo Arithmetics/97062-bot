@@ -94,14 +94,14 @@ function parseGames(html: string): RawScrapedGame[] {
   return availableGames;
 }
 
-function filterAndConvert(scrapedGames: RawScrapedGame[]): LiveGame[] {
+function todaysRawGamesOnly(scrapedGames: RawScrapedGame[]): RawScrapedGame[] {
   const todayDate = new Date().getDate();
 
-  const todaysGames = scrapedGames.filter(g =>
-    g.date.includes(` ${todayDate} `),
-  );
+  return scrapedGames.filter(g => g.date.includes(` ${todayDate} `));
+}
 
-  return todaysGames.map(g => {
+function convertRawToFullGame(scrapedGames: RawScrapedGame[]): LiveGame[] {
+  return scrapedGames.map(g => {
     const gameTimes = g.gameState.split('Q');
     return {
       awayTeam: g.awayTeam,
@@ -131,7 +131,9 @@ function readGamesFromFile(filename: string): LiveGame[] {
 }
 
 function keepLiveLinesUpdated(liveReadGames: RawScrapedGame[]): void {
-  const todaysLiveGames = filterAndConvert(liveReadGames);
+  const todaysLiveGames = convertRawToFullGame(
+    todaysRawGamesOnly(liveReadGames),
+  );
   const liveGames = todaysLiveGames.filter(
     g => g.quarter !== undefined && g.minute !== undefined,
   );
@@ -140,7 +142,9 @@ function keepLiveLinesUpdated(liveReadGames: RawScrapedGame[]): void {
 
 function keepClosingLinesUpdated(liveReadGames: RawScrapedGame[]): void {
   const currentlySavedGames = readGamesFromFile('todaysGamesAtClose.json');
-  const todaysLiveGames = filterAndConvert(liveReadGames);
+  const todaysLiveGames = convertRawToFullGame(
+    todaysRawGamesOnly(liveReadGames),
+  );
 
   const liveGamesThatHaveNotStarted = todaysLiveGames.filter(
     lrg => !lrg.quarter && !lrg.minute,
@@ -172,28 +176,40 @@ function keepClosingLinesUpdated(liveReadGames: RawScrapedGame[]): void {
   saveGamesToFile(allGamesUpdated, './todaysGamesAtClose.json');
 }
 
-function scrapeAndSave(): void {
-  (async (): Promise<void> => {
-    const browser = await puppeteer.launch({});
-    const page = await browser.newPage();
-    await page.goto(url);
-    await page.waitForSelector('.league-events-block');
-    await new Promise(r => setTimeout(r, 2000));
-    const content = await page.content();
-    const games = parseGames(content);
-    keepClosingLinesUpdated(games);
-    keepLiveLinesUpdated(games);
-
-    await browser.close();
-  })();
+export async function scrapeListedGames(): Promise<LiveGame[]> {
+  const browser = await puppeteer.launch({});
+  const page = await browser.newPage();
+  await page.goto(url);
+  await page.waitForSelector('.league-events-block');
+  await new Promise(r => setTimeout(r, 2000));
+  const content = await page.content();
+  const rawGames = parseGames(content);
+  const todaysLiveGames = todaysRawGamesOnly(rawGames);
+  return convertRawToFullGame(todaysLiveGames);
 }
 
-const minutes = 15;
-const interval = minutes * 60 * 1000;
-setInterval(function() {
-  console.log(new Date());
-  console.log('I am doing my 15 minutes check');
-  scrapeAndSave();
-}, interval);
+// function scrapeAndSave(): void {
+//   (async (): Promise<void> => {
+//     const browser = await puppeteer.launch({});
+//     const page = await browser.newPage();
+//     await page.goto(url);
+//     await page.waitForSelector('.league-events-block');
+//     await new Promise(r => setTimeout(r, 2000));
+//     const content = await page.content();
+//     const games = parseGames(content);
+//     keepClosingLinesUpdated(games);
+//     keepLiveLinesUpdated(games);
 
-scrapeAndSave();
+//     await browser.close();
+//   })();
+// }
+
+// const minutes = 15;
+// const interval = minutes * 60 * 1000;
+// setInterval(function() {
+//   console.log(new Date());
+//   console.log('I am doing my 15 minutes check');
+//   scrapeAndSave();
+// }, interval);
+
+// scrapeAndSave();
