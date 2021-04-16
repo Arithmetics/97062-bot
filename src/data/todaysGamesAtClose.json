@@ -1,0 +1,26 @@
+[
+  {
+    "awayTeam": "MIL Bucks",
+    "homeTeam": "ATL Hawks",
+    "awayLine": -4.5,
+    "overLine": 235
+  },
+  {
+    "awayTeam": "GS Warriors",
+    "homeTeam": "CLE Cavaliers",
+    "awayLine": -5.5,
+    "overLine": 225.5
+  },
+  {
+    "awayTeam": "BOS Celtics",
+    "homeTeam": "LA Lakers",
+    "awayLine": -8,
+    "overLine": 212
+  },
+  {
+    "awayTeam": "SAC Kings",
+    "homeTeam": "PHO Suns",
+    "awayLine": 12.5,
+    "overLine": 234.5
+  }
+]
