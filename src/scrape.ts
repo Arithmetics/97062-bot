@@ -116,40 +116,24 @@ function convertRawToFullGame(scrapedGames: RawScrapedGame[]): LiveGame[] {
   });
 }
 
-function saveGamesToFile(games: LiveGame[], fileName: string): void {
-  fs.writeFile(fileName, JSON.stringify(games), 'utf-8', function(err) {
-    if (err) {
-      console.log(err);
-    }
-  });
+export function filterActiveGames(games: LiveGame[]): LiveGame[] {
+  return games.filter(g => g.quarter !== undefined && g.minute !== undefined);
 }
 
-function readGamesFromFile(filename: string): LiveGame[] {
+export function filterNotStartedGames(games: LiveGame[]): LiveGame[] {
+  return games.filter(lrg => !lrg.quarter && !lrg.minute);
+}
+
+export function readGamesFromFile(filename: string): LiveGame[] {
   const rawdata = fs.readFileSync(filename);
   const games = JSON.parse(rawdata.toString());
   return games;
 }
 
-function keepLiveLinesUpdated(liveReadGames: RawScrapedGame[]): void {
-  const todaysLiveGames = convertRawToFullGame(
-    todaysRawGamesOnly(liveReadGames),
-  );
-  const liveGames = todaysLiveGames.filter(
-    g => g.quarter !== undefined && g.minute !== undefined,
-  );
-  saveGamesToFile(liveGames, './liveGameLines.json');
-}
-
-function keepClosingLinesUpdated(liveReadGames: RawScrapedGame[]): void {
-  const currentlySavedGames = readGamesFromFile('todaysGamesAtClose.json');
-  const todaysLiveGames = convertRawToFullGame(
-    todaysRawGamesOnly(liveReadGames),
-  );
-
-  const liveGamesThatHaveNotStarted = todaysLiveGames.filter(
-    lrg => !lrg.quarter && !lrg.minute,
-  );
-
+export function combinedSavedUnstartedLinesWithNewUnstartedLines(
+  currentlySavedGames: LiveGame[],
+  liveGamesThatHaveNotStarted: LiveGame[],
+): LiveGame[] {
   const allGamesUpdated = currentlySavedGames.map(csg => {
     const match = liveGamesThatHaveNotStarted.find(
       lrg => lrg.awayTeam === csg.awayTeam && lrg.homeTeam === csg.homeTeam,
@@ -163,7 +147,7 @@ function keepClosingLinesUpdated(liveReadGames: RawScrapedGame[]): void {
     return { ...csg };
   });
 
-  todaysLiveGames.forEach(lrg => {
+  liveGamesThatHaveNotStarted.forEach(lrg => {
     const match = allGamesUpdated.find(
       agu => agu.awayTeam === lrg.awayTeam && agu.homeTeam === lrg.homeTeam,
     );
@@ -173,7 +157,7 @@ function keepClosingLinesUpdated(liveReadGames: RawScrapedGame[]): void {
     }
   });
 
-  saveGamesToFile(allGamesUpdated, './todaysGamesAtClose.json');
+  return allGamesUpdated;
 }
 
 export async function scrapeListedGames(): Promise<LiveGame[]> {
