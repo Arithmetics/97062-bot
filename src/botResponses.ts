@@ -25,8 +25,12 @@ export const haterRemarks: string[] = [
   'lets reduce your unit size huh?',
 ];
 
-export const ownerIds = {
+export const ownerIds: Record<string, string> = {
   '507719783014465537': 'jerms',
   '111938054297505792': 'kerm',
   '306086225016782849': 'brock',
+};
+
+export const channelIds: Record<string, string> = {
+  '675574196268564525': 'bets',
 };

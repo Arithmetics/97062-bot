@@ -171,29 +171,3 @@ export async function scrapeListedGames(): Promise<LiveGame[]> {
   const todaysLiveGames = todaysRawGamesOnly(rawGames);
   return convertRawToFullGame(todaysLiveGames);
 }
-
-// function scrapeAndSave(): void {
-//   (async (): Promise<void> => {
-//     const browser = await puppeteer.launch({});
-//     const page = await browser.newPage();
-//     await page.goto(url);
-//     await page.waitForSelector('.league-events-block');
-//     await new Promise(r => setTimeout(r, 2000));
-//     const content = await page.content();
-//     const games = parseGames(content);
-//     keepClosingLinesUpdated(games);
-//     keepLiveLinesUpdated(games);
-
-//     await browser.close();
-//   })();
-// }
-
-// const minutes = 15;
-// const interval = minutes * 60 * 1000;
-// setInterval(function() {
-//   console.log(new Date());
-//   console.log('I am doing my 15 minutes check');
-//   scrapeAndSave();
-// }, interval);
-
-// scrapeAndSave();
