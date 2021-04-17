@@ -25,7 +25,9 @@ function messageIsFrom(message: Discord.Message, name: string): boolean {
 }
 
 function sendLineInfo(): Discord.MessageEmbed {
-  const games = readGamesFromFile('./data/todaysGamesAtClose.json');
+  const games = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
 
   const gameEmbed: Partial<Discord.MessageEmbed> = {
     color: 0x0099ff,
@@ -48,7 +50,9 @@ function sendLineInfo(): Discord.MessageEmbed {
 }
 
 function sendLiveLineInfo(): Discord.MessageEmbed {
-  const games = readGamesFromFile('./data/liveGameLines.json');
+  const games = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+  );
 
   const gameEmbed: Partial<Discord.MessageEmbed> = {
     color: 0x0099ff,

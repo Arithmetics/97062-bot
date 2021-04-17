@@ -130,6 +130,15 @@ export function readGamesFromFile(filename: string): LiveGame[] {
   return games;
 }
 
+export function saveGamesToFile(games: LiveGame[], filename: string): void {
+  const jsonData = JSON.stringify(games);
+  fs.writeFile(filename, jsonData, function(err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+}
+
 export function combinedSavedUnstartedLinesWithNewUnstartedLines(
   currentlySavedGames: LiveGame[],
   liveGamesThatHaveNotStarted: LiveGame[],
@@ -170,4 +179,26 @@ export async function scrapeListedGames(): Promise<LiveGame[]> {
   const rawGames = parseGames(content);
   const todaysLiveGames = todaysRawGamesOnly(rawGames);
   return convertRawToFullGame(todaysLiveGames);
+}
+
+export function saveAllGames(scrapedGames: LiveGame[]): void {
+  const currentlySavedGames = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
+  const notStarted = filterNotStartedGames(scrapedGames);
+  const started = filterActiveGames(scrapedGames);
+
+  const allClosing = combinedSavedUnstartedLinesWithNewUnstartedLines(
+    currentlySavedGames,
+    notStarted,
+  );
+
+  saveGamesToFile(
+    allClosing,
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
+  saveGamesToFile(
+    started,
+    '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+  );
 }

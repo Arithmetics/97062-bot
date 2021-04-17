@@ -53,8 +53,12 @@ export type LiveBet = {
 };
 
 export function collectLiveBets(): LiveBet[] {
-  const closingGames = readGamesFromFile('./data/todaysGamesAtClose.json');
-  const liveGames = readGamesFromFile('./data/liveGameLines.json');
+  const closingGames = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
+  const liveGames = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+  );
 
   const liveBets: LiveBet[] = [];
   liveGames.forEach(liveGame => {
