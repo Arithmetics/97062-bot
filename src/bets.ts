@@ -85,12 +85,16 @@ export function collectLiveBets(): LiveBet[] {
         grade: betGrade,
       };
 
+      console.log(
+        `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
+      );
+
       if (betGrade > 5) {
-        potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
+        potentialLiveBet.choiceTeam = HomeOrAway.HOME;
         liveBets.push(potentialLiveBet);
       }
       if (betGrade < -5) {
-        potentialLiveBet.choiceTeam = HomeOrAway.HOME;
+        potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
         liveBets.push(potentialLiveBet);
       }
     }

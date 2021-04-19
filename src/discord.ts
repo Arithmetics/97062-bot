@@ -148,7 +148,7 @@ function sendBets(bets: LiveBet[]): Discord.MessageEmbed {
 
     gameEmbed.fields?.push({
       name: `New Bet: ${i + 1}`,
-      value: `I am betting a ${superBetText} bet on ${teamBetting} ${bet.currentAwayLine} vs ${teamFading}, my grade for this bet is ${bet.grade}. Line is ${bet.awayTeam} ${sym} at ${bet.homeTeam}`,
+      value: `I am betting a ${superBetText} bet on ${teamBetting} ${bet.currentAwayLine} vs ${teamFading}, my grade for this bet is ${bet.grade}. Line is ${bet.awayTeam} ${sym}${bet.currentAwayLine} at ${bet.homeTeam}`,
       inline: false,
     });
   });
@@ -162,6 +162,8 @@ export function messageOutBets(client: Discord.Client, bets: LiveBet[]): void {
   );
 
   if (channel?.isText()) {
-    channel?.send({ embed: sendBets(bets) });
+    if (bets.length !== 0) {
+      channel?.send({ embed: sendBets(bets) });
+    }
   }
 }

@@ -125,18 +125,14 @@ export function filterNotStartedGames(games: LiveGame[]): LiveGame[] {
 }
 
 export function readGamesFromFile(filename: string): LiveGame[] {
-  const rawdata = fs.readFileSync(filename);
-  const games = JSON.parse(rawdata.toString());
+  const rawdata = fs.readFileSync(filename, 'utf8');
+  const games = JSON.parse(rawdata);
   return games;
 }
 
 export function saveGamesToFile(games: LiveGame[], filename: string): void {
   const jsonData = JSON.stringify(games);
-  fs.writeFile(filename, jsonData, function(err) {
-    if (err) {
-      console.log(err);
-    }
-  });
+  fs.writeFileSync(filename, jsonData);
 }
 
 export function combinedSavedUnstartedLinesWithNewUnstartedLines(
@@ -176,6 +172,7 @@ export async function scrapeListedGames(): Promise<LiveGame[]> {
   await page.waitForSelector('.league-events-block');
   await new Promise(r => setTimeout(r, 2000));
   const content = await page.content();
+  await browser.close();
   const rawGames = parseGames(content);
   const todaysLiveGames = todaysRawGamesOnly(rawGames);
   return convertRawToFullGame(todaysLiveGames);
@@ -185,6 +182,7 @@ export function saveAllGames(scrapedGames: LiveGame[]): void {
   const currentlySavedGames = readGamesFromFile(
     '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
   );
+
   const notStarted = filterNotStartedGames(scrapedGames);
   const started = filterActiveGames(scrapedGames);
 
@@ -201,4 +199,6 @@ export function saveAllGames(scrapedGames: LiveGame[]): void {
     started,
     '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
   );
+
+  console.log('saved');
 }

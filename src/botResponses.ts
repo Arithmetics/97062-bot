@@ -26,8 +26,8 @@ export const haterRemarks: string[] = [
 ];
 
 export const ownerIds: Record<string, string> = {
-  '507719783014465537': 'jerms',
-  '111938054297505792': 'kerm',
+  '111938054297505792': 'jerms',
+  '507719783014465537': 'kerm',
   '306086225016782849': 'brock',
 };
 

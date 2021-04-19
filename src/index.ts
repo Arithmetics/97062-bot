@@ -13,9 +13,8 @@ asyncCall();
 console.log('starting up bet bot!');
 const client = startUpClient();
 console.log('scraping games', new Date().toLocaleTimeString());
-asyncCall();
 
-const interval = 15 * 60 * 1000; // 15 minutes;
+const interval = 60 * 60 * 1000; // 15 minutes;
 setInterval(async () => {
   console.log('scraping games', new Date().toLocaleTimeString());
   const games = await scrapeListedGames();
