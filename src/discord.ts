@@ -7,6 +7,17 @@ import { LiveBet, HomeOrAway } from './bets';
 
 const prefix = '!';
 
+function formatLine(line?: number): string {
+  if (line === undefined) {
+    return 'unknown, oops';
+  }
+  if (line > 0) {
+    return `+${line}`;
+  }
+
+  return `${line}`;
+}
+
 function messageIsBetSlip(message: Discord.Message): boolean {
   return (
     message.channel.id === '675574196268564525' &&
@@ -36,13 +47,11 @@ function sendLineInfo(): Discord.MessageEmbed {
   };
 
   games.forEach((g, i) => {
-    const pos = g?.awayLine || 0 > 0;
-
-    const sym = pos ? '+' : '';
-
     gameEmbed.fields?.push({
       name: `Game: ${i + 1}`,
-      value: `${g.awayTeam} are ${sym}${g.awayLine} @ ${g.homeTeam}, the total is ${g.overLine}`,
+      value: `${g.awayTeam} are ${formatLine(g.awayLine)} @ ${
+        g.homeTeam
+      }, the total is ${g.overLine}`,
       inline: false,
     });
   });
@@ -61,13 +70,13 @@ function sendLiveLineInfo(): Discord.MessageEmbed {
   };
 
   games.forEach((g, i) => {
-    const pos = g?.awayLine || 0 > 0;
-
-    const sym = pos ? '+' : '';
-
     gameEmbed.fields?.push({
       name: `Game: ${i + 1}`,
-      value: `${g.awayTeam} are ${sym}${g.awayLine} @ ${g.homeTeam}, score: (${g.awayScore} - ${g.homeScore}, time: Q${g.quarter}:${g.minute})`,
+      value: `${g.awayTeam} are ${formatLine(g.awayLine)} @ ${
+        g.homeTeam
+      }, score: (${g.awayScore} - ${g.homeScore}, time: Q${g.quarter}:${
+        g.minute
+      })`,
       inline: false,
     });
   });
@@ -134,10 +143,6 @@ function sendBets(bets: LiveBet[]): Discord.MessageEmbed {
   };
 
   bets.forEach((bet, i) => {
-    const pos = bet?.currentAwayLine || 0 > 0;
-
-    const sym = pos ? '+' : '';
-
     const superBetText = bet.grade > 10 ? 'super' : 'regular';
 
     const teamBetting =
@@ -146,9 +151,11 @@ function sendBets(bets: LiveBet[]): Discord.MessageEmbed {
     const teamFading =
       bet.choiceTeam === HomeOrAway.HOME ? bet.awayTeam : bet.homeTeam;
 
+    const line = formatLine(bet.currentAwayLine);
+
     gameEmbed.fields?.push({
       name: `New Bet: ${i + 1}`,
-      value: `I am betting a ${superBetText} bet on ${teamBetting} ${bet.currentAwayLine} vs ${teamFading}, my grade for this bet is ${bet.grade}. Line is ${bet.awayTeam} ${sym} at ${bet.homeTeam}`,
+      value: `I am betting a ${superBetText} bet on ${teamBetting} (betting against ${teamFading}), my grade for this bet is ${bet.grade}. Line is ${bet.awayTeam} ${line} at ${bet.homeTeam}`,
       inline: false,
     });
   });

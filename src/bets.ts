@@ -25,6 +25,10 @@ function gameShouldBeLiveBet(liveGame: LiveGame): boolean {
   );
 }
 
+-25;
+40;
+20;
+
 function determineBetGrade(
   currentAwayTeamLead: number,
   currentAwayLine: number,
@@ -86,11 +90,11 @@ export function collectLiveBets(): LiveBet[] {
       };
 
       if (betGrade > 5) {
-        potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
+        potentialLiveBet.choiceTeam = HomeOrAway.HOME;
         liveBets.push(potentialLiveBet);
       }
       if (betGrade < -5) {
-        potentialLiveBet.choiceTeam = HomeOrAway.HOME;
+        potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
         liveBets.push(potentialLiveBet);
       }
     }
