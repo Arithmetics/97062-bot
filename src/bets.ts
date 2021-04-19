@@ -25,6 +25,10 @@ function gameShouldBeLiveBet(liveGame: LiveGame): boolean {
   );
 }
 
+-25;
+40;
+20;
+
 function determineBetGrade(
   currentAwayTeamLead: number,
   currentAwayLine: number,
