@@ -88,8 +88,6 @@ export function startUpClient(): Discord.Client {
   const client = new Discord.Client();
 
   client.once('ready', () => {
-    console.log('Ready!');
-
     client.on('message', message => {
       if (messageIsBetSlip(message)) {
         message.channel.send(

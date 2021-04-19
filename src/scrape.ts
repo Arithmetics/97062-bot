@@ -26,6 +26,10 @@ export type RawScrapedGame = {
   homeScore: string;
 };
 
+export type TimeKeeping = {
+  lastScrapedDay: number;
+};
+
 function parseGames(html: string): RawScrapedGame[] {
   const availableGames = [];
   const $ = cheerio.load(html);
@@ -95,9 +99,9 @@ function parseGames(html: string): RawScrapedGame[] {
 }
 
 function todaysRawGamesOnly(scrapedGames: RawScrapedGame[]): RawScrapedGame[] {
-  const todayDate = new Date().getDate();
+  const todaysDate = new Date().getDate();
 
-  return scrapedGames.filter(g => g.date.includes(` ${todayDate} `));
+  return scrapedGames.filter(g => g.date.includes(` ${todaysDate} `));
 }
 
 function convertRawToFullGame(scrapedGames: RawScrapedGame[]): LiveGame[] {
@@ -128,6 +132,25 @@ export function readGamesFromFile(filename: string): LiveGame[] {
   const rawdata = fs.readFileSync(filename, 'utf8');
   const games = JSON.parse(rawdata);
   return games;
+}
+
+function readTimeKeeping(): TimeKeeping {
+  const raw = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/timeKeeping.json',
+    'utf8',
+  );
+  return JSON.parse(raw);
+}
+
+export function updateTimeKeeping(todaysDay: number): void {
+  const newTimeKeeping: TimeKeeping = {
+    lastScrapedDay: todaysDay,
+  };
+  const jsonData = JSON.stringify(newTimeKeeping);
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/timeKeeping.json',
+    jsonData,
+  );
 }
 
 export function saveGamesToFile(games: LiveGame[], filename: string): void {
@@ -179,6 +202,21 @@ export async function scrapeListedGames(): Promise<LiveGame[]> {
 }
 
 export function saveAllGames(scrapedGames: LiveGame[]): void {
+  const timeKeeping = readTimeKeeping();
+  const todaysDate = new Date().getDate();
+
+  if (timeKeeping.lastScrapedDay !== todaysDate) {
+    saveGamesToFile(
+      [],
+      '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+    );
+    saveGamesToFile(
+      [],
+      '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+    );
+    updateTimeKeeping(todaysDate);
+  }
+
   const currentlySavedGames = readGamesFromFile(
     '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
   );
@@ -199,6 +237,4 @@ export function saveAllGames(scrapedGames: LiveGame[]): void {
     started,
     '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
   );
-
-  console.log('saved');
 }
