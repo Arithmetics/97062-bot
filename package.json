@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rimraf ./build && tsc",
-    "start:dev": "nodemon",
+    "dev": "nodemon",
     "start": "npm run build && node build/index.js",
     "lint": "eslint . --ext .ts",
     "prettier-format": "run-script-os",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.6",
+    "csv-writer": "^1.6.0",
     "discord.js": "^12.5.3",
     "eslint-plugin-jest": "^24.1.0",
     "jest": "^26.5.3",

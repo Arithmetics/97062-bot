@@ -1,3 +1,4 @@
+import { createObjectCsvWriter } from 'csv-writer';
 import { LiveGame, readGamesFromFile } from './scrape';
 
 function matchGames(
@@ -19,15 +20,11 @@ function matchGames(
 function gameShouldBeLiveBet(liveGame: LiveGame): boolean {
   return (
     liveGame.awayLine !== undefined &&
-    liveGame.quarter === 3 &&
+    (liveGame.quarter === 3 || liveGame.quarter === 2) &&
     liveGame.awayScore !== undefined &&
     liveGame.homeScore !== undefined
   );
 }
-
--25;
-40;
-20;
 
 function determineBetGrade(
   currentAwayTeamLead: number,
@@ -93,15 +90,32 @@ export function collectLiveBets(): LiveBet[] {
         `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
       );
 
-      if (betGrade > 5) {
+      if (betGrade > 4) {
         potentialLiveBet.choiceTeam = HomeOrAway.HOME;
         liveBets.push(potentialLiveBet);
       }
-      if (betGrade < -5) {
+      if (betGrade < -4) {
         potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
         liveBets.push(potentialLiveBet);
       }
     }
   });
   return liveBets;
+}
+
+export function csvLogBets(bets: LiveBet[]): void {
+  const csvWriter = createObjectCsvWriter({
+    path: '/Users/brocktillotson/workspace/97062-bot/src/bets.csv',
+    header: [
+      { id: 'awayTeam', title: 'awayTeam' },
+      { id: 'homeTeam', title: 'homeTeam' },
+      { id: 'choiceTeam', title: 'choiceTeam' },
+      { id: 'currentAwayTeamLead', title: 'currentAwayTeamLead' },
+      { id: 'currentAwayLine', title: 'currentAwayLine' },
+      { id: 'closingAwayLine', title: 'closingAwayLine' },
+      { id: 'grade', title: 'grade' },
+    ],
+  });
+
+  csvWriter.writeRecords(bets);
 }

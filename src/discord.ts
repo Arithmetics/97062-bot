@@ -89,16 +89,18 @@ export function startUpClient(): Discord.Client {
 
   client.once('ready', () => {
     client.on('message', message => {
-      if (messageIsBetSlip(message)) {
-        message.channel.send(
-          `another bet slip from you? ... ${randomHaterRemark()}`,
-        );
-        return;
-      }
+      // if (messageIsBetSlip(message)) {
+      //   message.channel.send(
+      //     `another bet slip from you? ... ${randomHaterRemark()}`,
+      //   );
+      //   return;
+      // }
 
       if (message.mentions.has(client?.user?.id || '')) {
         if (messageIsFrom(message, 'kerm')) {
-          message.channel.send('kevin... youre not that cool');
+          message.channel.send(
+            'kevin... come hit this shit w/me brah!🍁🚬🍁🚬🍁🚬🍁🚬🍁 !',
+          );
           return;
         }
         if (messageIsFrom(message, 'jerms')) {
@@ -111,6 +113,21 @@ export function startUpClient(): Discord.Client {
           message.channel.send('hello!, have a great day');
           return;
         }
+        if (messageIsFrom(message, 'trox')) {
+          message.channel.send('btrox? too scared to bet in here. gtfo');
+          return;
+        }
+        if (messageIsFrom(message, 'dagr')) {
+          message.channel.send(
+            'oh dagr. usually you blow your roll real quick boy...',
+          );
+          return;
+        }
+        if (messageIsFrom(message, 'jhi')) {
+          message.channel.send('hahah lil boy jhi. gtfo');
+          return;
+        }
+
         message.channel.send('Tag me again, see what happens!');
         return;
       }

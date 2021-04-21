@@ -189,16 +189,21 @@ export function combinedSavedUnstartedLinesWithNewUnstartedLines(
 }
 
 export async function scrapeListedGames(): Promise<LiveGame[]> {
-  const browser = await puppeteer.launch({});
-  const page = await browser.newPage();
-  await page.goto(url);
-  await page.waitForSelector('.league-events-block');
-  await new Promise(r => setTimeout(r, 2000));
-  const content = await page.content();
-  await browser.close();
-  const rawGames = parseGames(content);
-  const todaysLiveGames = todaysRawGamesOnly(rawGames);
-  return convertRawToFullGame(todaysLiveGames);
+  try {
+    const browser = await puppeteer.launch({});
+    const page = await browser.newPage();
+    await page.goto(url);
+    await page.waitForSelector('.league-events-block');
+    await new Promise(r => setTimeout(r, 2000));
+    const content = await page.content();
+    await browser.close();
+    const rawGames = parseGames(content);
+    const todaysLiveGames = todaysRawGamesOnly(rawGames);
+    return convertRawToFullGame(todaysLiveGames);
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
 }
 
 export function saveAllGames(scrapedGames: LiveGame[]): void {

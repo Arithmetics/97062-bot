@@ -2,7 +2,7 @@ import Discord from 'discord.js';
 import { setInterval } from 'timers';
 import { startUpClient, messageOutBets } from './discord';
 import { scrapeListedGames, saveAllGames } from './scrape';
-import { collectLiveBets } from './bets';
+import { collectLiveBets, csvLogBets } from './bets';
 
 console.log('starting up bet bot!');
 const client = startUpClient();
@@ -12,6 +12,7 @@ async function runCycle(client: Discord.Client): Promise<void> {
   const games = await scrapeListedGames();
   saveAllGames(games);
   const bets = collectLiveBets();
+  csvLogBets(bets);
   messageOutBets(client, bets);
 }
 
