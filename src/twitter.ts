@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import Twit from 'twit';
-import { LiveBet, HomeOrAway } from './bets';
+import { LiveBet, HomeOrAway, OverOrUnder, LiveOverUnderBet } from './bets';
 import { formatLine } from './discord';
 
 const T = new Twit({
@@ -29,7 +29,25 @@ function formatBets(bets: LiveBet[]): string {
         bet.grade,
       )} units on ${teamBetting} (betting against ${teamFading}). Line is ${
         bet.awayTeam
-      } ${line} at ${bet.homeTeam}`,
+      } ${line} at ${bet.homeTeam} \n`,
+    );
+  });
+  return tweet;
+}
+
+function formatOverUnderBets(bets: LiveOverUnderBet[]): string {
+  let tweet =
+    bets.length > 1 ? 'Making some live bets: \n' : 'Making a live bet: \n';
+
+  bets.forEach(bet => {
+    tweet = tweet.concat(
+      `I am betting ${Math.abs(bet.grade)} units on the ${
+        bet.choicePick
+      } in the ${bet.awayTeam} - ${bet.homeTeam} game. Current total is ${
+        bet.currentTotalLine
+      }, current line is ${bet.currentTotalLine}, closing line was ${
+        bet.closingTotalLine
+      }`,
     );
   });
   return tweet;
@@ -40,6 +58,16 @@ export function tweetBets(bets: LiveBet[]): void {
     return;
   }
   const text = formatBets(bets);
+  T.post('statuses/update', { status: text }, function(err) {
+    console.log(err);
+  });
+}
+
+export function tweetOverUnderBets(bets: LiveOverUnderBet[]): void {
+  if (bets.length === 0) {
+    return;
+  }
+  const text = formatOverUnderBets(bets);
   T.post('statuses/update', { status: text }, function(err) {
     console.log(err);
   });

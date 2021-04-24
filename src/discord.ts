@@ -3,7 +3,7 @@ import Discord from 'discord.js';
 import { haterRemarks } from './botResponses';
 import { ownerIds } from './botResponses';
 import { readGamesFromFile } from './scrape';
-import { LiveBet, HomeOrAway } from './bets';
+import { LiveBet, HomeOrAway, LiveOverUnderBet, OverOrUnder } from './bets';
 
 const prefix = '!';
 
@@ -178,6 +178,24 @@ function sendBets(bets: LiveBet[]): Discord.MessageEmbed {
   return gameEmbed as Discord.MessageEmbed;
 }
 
+function sendOverUnderBets(bets: LiveOverUnderBet[]): Discord.MessageEmbed {
+  const gameEmbed: Partial<Discord.MessageEmbed> = {
+    color: 0x0099ff,
+    title: 'Bot here, about to make a some totals bets! Here, they are',
+    fields: [],
+  };
+
+  bets.forEach((bet, i) => {
+    gameEmbed.fields?.push({
+      name: `New Bet: ${i + 1}`,
+      value: `I am betting the ${bet.choicePick} in the ${bet.awayTeam} - ${bet.homeTeam} game. Grade is ${bet.grade}. Current total is ${bet.currentTotalLine}, current line is ${bet.currentTotalLine}, closing line was ${bet.closingTotalLine}`,
+      inline: false,
+    });
+  });
+
+  return gameEmbed as Discord.MessageEmbed;
+}
+
 export function messageOutBets(client: Discord.Client, bets: LiveBet[]): void {
   const channel = client.channels.cache.find(
     c => c.id === '675574196268564525',
@@ -186,6 +204,21 @@ export function messageOutBets(client: Discord.Client, bets: LiveBet[]): void {
   if (channel?.isText()) {
     if (bets.length !== 0) {
       channel?.send({ embed: sendBets(bets) });
+    }
+  }
+}
+
+export function messageOutOverUnderBets(
+  client: Discord.Client,
+  bets: LiveOverUnderBet[],
+): void {
+  const channel = client.channels.cache.find(
+    c => c.id === '675574196268564525',
+  );
+
+  if (channel?.isText()) {
+    if (bets.length !== 0) {
+      channel?.send({ embed: sendOverUnderBets(bets) });
     }
   }
 }

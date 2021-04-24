@@ -119,3 +119,92 @@ export function csvLogBets(bets: LiveBet[]): void {
 
   csvWriter.writeRecords(bets);
 }
+
+export enum OverOrUnder {
+  OVER = 'OVER',
+  UNDER = 'UNDER',
+}
+
+export type LiveOverUnderBet = {
+  awayTeam: string;
+  homeTeam: string;
+  choicePick: OverOrUnder;
+  currentTotalScore: number;
+  currentTotalLine: number;
+  closingTotalLine: number;
+  grade: number;
+};
+
+function calcMinutesRemaining(game: LiveGame): number {
+  if (game.quarter === undefined || game.minute === undefined) {
+    return 0;
+  }
+  const baseMinutes = (game.quarter - 1) * 12;
+
+  return 48 - baseMinutes - (12 - game.minute);
+}
+
+function determineOverUnderBetGrade(
+  currentTotalScore: number,
+  currentTotalLine: number,
+  closingTotalLine: number,
+  minutesLeft: number,
+): number {
+  const expectedRate = closingTotalLine / 48; // pts / minute
+  const predictedFinalScore = currentTotalScore + minutesLeft * expectedRate;
+  return predictedFinalScore - currentTotalLine;
+}
+
+export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
+  const closingGames = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
+  const liveGames = readGamesFromFile(
+    '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+  );
+
+  const liveOverUnderBets: LiveOverUnderBet[] = [];
+
+  liveGames.forEach(liveGame => {
+    const matchedClosingGame = matchGames(liveGame, closingGames);
+    if (matchedClosingGame && gameShouldBeLiveBet(liveGame)) {
+      const currentTotalScore =
+        (liveGame.awayScore || 0) + (liveGame.homeScore || 0);
+      const currentTotalLine = liveGame.overLine || 0;
+      const closingTotalLine = matchedClosingGame.overLine || 0;
+
+      const minutesLeft = calcMinutesRemaining(liveGame);
+
+      const betGrade = determineOverUnderBetGrade(
+        currentTotalScore,
+        currentTotalLine,
+        closingTotalLine,
+        minutesLeft,
+      );
+
+      const potentialLiveBet = {
+        awayTeam: liveGame.awayTeam,
+        homeTeam: liveGame.homeTeam,
+        choicePick: OverOrUnder.OVER,
+        currentTotalScore,
+        currentTotalLine,
+        closingTotalLine,
+        grade: betGrade,
+      };
+
+      console.log(
+        `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
+      );
+
+      if (betGrade > 4) {
+        potentialLiveBet.choicePick = OverOrUnder.OVER;
+        liveOverUnderBets.push(potentialLiveBet);
+      }
+      if (betGrade < -4) {
+        potentialLiveBet.choicePick = OverOrUnder.UNDER;
+        liveOverUnderBets.push(potentialLiveBet);
+      }
+    }
+  });
+  return liveOverUnderBets;
+}
