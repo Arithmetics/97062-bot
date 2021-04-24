@@ -3,6 +3,7 @@ import { setInterval } from 'timers';
 import { startUpClient, messageOutBets } from './discord';
 import { scrapeListedGames, saveAllGames } from './scrape';
 import { collectLiveBets, csvLogBets } from './bets';
+import { tweetBets } from './twitter';
 
 console.log('starting up bet bot!');
 const client = startUpClient();
@@ -13,6 +14,7 @@ async function runCycle(client: Discord.Client): Promise<void> {
   saveAllGames(games);
   const bets = collectLiveBets();
   csvLogBets(bets);
+  tweetBets(bets);
   messageOutBets(client, bets);
 }
 

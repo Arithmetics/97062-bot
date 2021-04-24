@@ -7,7 +7,7 @@ import { LiveBet, HomeOrAway } from './bets';
 
 const prefix = '!';
 
-function formatLine(line?: number): string {
+export function formatLine(line?: number): string {
   if (line === undefined) {
     return 'unknown, oops';
   }
