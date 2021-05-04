@@ -1,4 +1,4 @@
-import { createObjectCsvWriter } from 'csv-writer';
+import fs from 'fs';
 import { LiveGame, readGamesFromFile } from './scrape';
 
 function matchGames(
@@ -53,6 +53,72 @@ export type LiveBet = {
   grade: number;
 };
 
+function loadPlacedBets(): LiveBet[] {
+  const rawdata = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    'utf8',
+  );
+  return JSON.parse(rawdata) as LiveBet[];
+}
+
+function loadPlacedOverUnderBets(): LiveOverUnderBet[] {
+  const rawdata = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    'utf8',
+  );
+  return JSON.parse(rawdata) as LiveOverUnderBet[];
+}
+
+export function saveBets(bets: LiveBet[]): void {
+  const rawdata = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    'utf8',
+  );
+  const currentBets = JSON.parse(rawdata) as LiveBet[];
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    [...currentBets, ...bets],
+  );
+}
+
+function filterAlreadyPlacedBets(potentialBets: LiveBet[]): LiveBet[] {
+  const placedBets = loadPlacedBets();
+
+  return potentialBets.filter(potentialBet => {
+    const matchedBets = placedBets.filter(
+      placedBet =>
+        placedBet.awayTeam === potentialBet.awayTeam &&
+        placedBet.homeTeam === potentialBet.homeTeam,
+    );
+
+    if (matchedBets.some(b => Math.abs(potentialBet.grade - b.grade) < 5)) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function filterAlreadyPlacedOverUnderBets(
+  potentialBets: LiveOverUnderBet[],
+): LiveOverUnderBet[] {
+  const placedBets = loadPlacedOverUnderBets();
+
+  return potentialBets.filter(potentialBet => {
+    const matchedBets = placedBets.filter(
+      placedBet =>
+        placedBet.awayTeam === potentialBet.awayTeam &&
+        placedBet.homeTeam === potentialBet.homeTeam,
+    );
+
+    if (matchedBets.some(b => Math.abs(potentialBet.grade - b.grade) < 5)) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export function collectLiveBets(): LiveBet[] {
   const closingGames = readGamesFromFile(
     '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
@@ -100,24 +166,8 @@ export function collectLiveBets(): LiveBet[] {
       }
     }
   });
-  return liveBets;
-}
 
-export function csvLogBets(bets: LiveBet[]): void {
-  const csvWriter = createObjectCsvWriter({
-    path: '/Users/brocktillotson/workspace/97062-bot/src/bets.csv',
-    header: [
-      { id: 'awayTeam', title: 'awayTeam' },
-      { id: 'homeTeam', title: 'homeTeam' },
-      { id: 'choiceTeam', title: 'choiceTeam' },
-      { id: 'currentAwayTeamLead', title: 'currentAwayTeamLead' },
-      { id: 'currentAwayLine', title: 'currentAwayLine' },
-      { id: 'closingAwayLine', title: 'closingAwayLine' },
-      { id: 'grade', title: 'grade' },
-    ],
-  });
-
-  csvWriter.writeRecords(bets);
+  return filterAlreadyPlacedBets(liveBets);
 }
 
 export enum OverOrUnder {
@@ -206,5 +256,29 @@ export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
       }
     }
   });
-  return liveOverUnderBets;
+  return filterAlreadyPlacedOverUnderBets(liveOverUnderBets);
+}
+
+export function saveOverUnderBets(bets: LiveOverUnderBet[]): void {
+  const rawdata = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    'utf8',
+  );
+  const currentBets = JSON.parse(rawdata) as LiveOverUnderBet[];
+
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    [...currentBets, ...bets],
+  );
+}
+
+export function clearBetsMade(): void {
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    [],
+  );
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    [],
+  );
 }

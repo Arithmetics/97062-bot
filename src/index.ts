@@ -6,7 +6,12 @@ import {
   messageOutOverUnderBets,
 } from './discord';
 import { scrapeListedGames, saveAllGames } from './scrape';
-import { collectLiveBets, collectLiveUnderOverBets, csvLogBets } from './bets';
+import {
+  collectLiveBets,
+  collectLiveUnderOverBets,
+  saveBets,
+  saveOverUnderBets,
+} from './bets';
 import { tweetBets, tweetOverUnderBets } from './twitter';
 
 console.log('starting up bet bot!');
@@ -18,11 +23,12 @@ async function runCycle(client: Discord.Client): Promise<void> {
   saveAllGames(games);
   const bets = collectLiveBets();
   const overUnderBets = collectLiveUnderOverBets();
-  csvLogBets(bets);
-  tweetBets(bets);
-  tweetOverUnderBets(overUnderBets);
-  messageOutBets(client, bets);
-  messageOutOverUnderBets(client, overUnderBets);
+  saveBets(bets);
+  saveOverUnderBets(overUnderBets);
+  // tweetBets(bets);
+  // tweetOverUnderBets(overUnderBets);
+  // messageOutBets(client, bets);
+  // messageOutOverUnderBets(client, overUnderBets);
 }
 
 runCycle(client);

@@ -2,6 +2,8 @@ import puppeteer from 'puppeteer';
 import cheerio from 'cheerio';
 import fs from 'fs';
 
+import { clearBetsMade } from './bets';
+
 const url = 'https://sports.oregonlottery.org/sports/basketball/nba';
 
 export type LiveGame = {
@@ -219,6 +221,7 @@ export function saveAllGames(scrapedGames: LiveGame[]): void {
       [],
       '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
     );
+    clearBetsMade();
     updateTimeKeeping(todaysDate);
   }
 
