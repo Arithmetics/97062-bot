@@ -90,11 +90,11 @@ export function collectLiveBets(): LiveBet[] {
         `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
       );
 
-      if (betGrade > 4) {
+      if (betGrade > 4.9) {
         potentialLiveBet.choiceTeam = HomeOrAway.HOME;
         liveBets.push(potentialLiveBet);
       }
-      if (betGrade < -4) {
+      if (betGrade < -4.9) {
         potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
         liveBets.push(potentialLiveBet);
       }
@@ -152,7 +152,7 @@ function determineOverUnderBetGrade(
 ): number {
   const expectedRate = closingTotalLine / 48; // pts / minute
   const predictedFinalScore = currentTotalScore + minutesLeft * expectedRate;
-  return predictedFinalScore - currentTotalLine;
+  return parseFloat((predictedFinalScore - currentTotalLine).toFixed(2));
 }
 
 export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
@@ -193,14 +193,14 @@ export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
       };
 
       console.log(
-        `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
+        `found a over under bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade} with ${minutesLeft} left in the game`,
       );
 
-      if (betGrade > 4) {
+      if (betGrade > 8) {
         potentialLiveBet.choicePick = OverOrUnder.OVER;
         liveOverUnderBets.push(potentialLiveBet);
       }
-      if (betGrade < -4) {
+      if (betGrade < -8) {
         potentialLiveBet.choicePick = OverOrUnder.UNDER;
         liveOverUnderBets.push(potentialLiveBet);
       }

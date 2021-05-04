@@ -44,7 +44,7 @@ function formatOverUnderBets(bets: LiveOverUnderBet[]): string {
       `I am betting ${Math.abs(bet.grade)} units on the ${
         bet.choicePick
       } in the ${bet.awayTeam} - ${bet.homeTeam} game. Current total is ${
-        bet.currentTotalLine
+        bet.currentTotalScore
       }, current line is ${bet.currentTotalLine}, closing line was ${
         bet.closingTotalLine
       }`,

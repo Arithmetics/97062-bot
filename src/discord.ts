@@ -188,7 +188,7 @@ function sendOverUnderBets(bets: LiveOverUnderBet[]): Discord.MessageEmbed {
   bets.forEach((bet, i) => {
     gameEmbed.fields?.push({
       name: `New Bet: ${i + 1}`,
-      value: `I am betting the ${bet.choicePick} in the ${bet.awayTeam} - ${bet.homeTeam} game. Grade is ${bet.grade}. Current total is ${bet.currentTotalLine}, current line is ${bet.currentTotalLine}, closing line was ${bet.closingTotalLine}`,
+      value: `I am betting the ${bet.choicePick} in the ${bet.awayTeam} - ${bet.homeTeam} game. Grade is ${bet.grade}. Current total score is ${bet.currentTotalScore}, current line is ${bet.currentTotalLine}, closing line was ${bet.closingTotalLine}`,
       inline: false,
     });
   });
