@@ -1,8 +1,10 @@
 import puppeteer from 'puppeteer';
 import cheerio from 'cheerio';
 import fs from 'fs';
+import Discord from 'discord.js';
+import Twit from 'twit';
 
-import { clearBetsMade } from './bets';
+import { clearBetsMade, calculateBettingResults } from './bets';
 
 const url = 'https://sports.oregonlottery.org/sports/basketball/nba';
 
@@ -30,6 +32,13 @@ export type RawScrapedGame = {
 
 export type TimeKeeping = {
   lastScrapedDay: number;
+};
+
+export type CompleteGameScore = {
+  awayTeam: string;
+  homeTeam: string;
+  awayScore: number;
+  homeScore: number;
 };
 
 function parseGames(html: string): RawScrapedGame[] {
@@ -98,6 +107,50 @@ function parseGames(html: string): RawScrapedGame[] {
   }
 
   return availableGames;
+}
+
+function parseLastNightsGames(html: string): CompleteGameScore[] {
+  const games = [];
+  const $ = cheerio.load(html);
+  const gameBlocks = $('[class^="EventCard__eventCardContainer"]');
+
+  for (let i = 0; i < gameBlocks.length; i++) {
+    try {
+      const block = gameBlocks[i];
+
+      const teamNames = $(block).find('[class^="EventCard__teamName"]');
+
+      const scores = $(block).find('[class^="EventCard__scoreColumn"]');
+
+      games.push({
+        awayTeam: $(teamNames[0]).text(),
+        awayScore: parseInt($(scores[0]).text(), 10),
+        homeTeam: $(teamNames[1]).text(),
+        homeScore: parseInt($(scores[1]).text(), 10),
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  return games;
+}
+
+async function scrapeLastNightsGames(): Promise<CompleteGameScore[]> {
+  try {
+    const browser = await puppeteer.launch({});
+    const page = await browser.newPage();
+    await page.goto('https://www.thescore.com/nba/events/date/2021-05-09');
+    await page.waitForSelector('.col-xs-12');
+    await new Promise(r => setTimeout(r, 2000));
+    const content = await page.content();
+    await browser.close();
+    return parseLastNightsGames(content);
+  } catch (e) {
+    console.log('Error grading!');
+    console.log(e);
+    return [];
+  }
 }
 
 function todaysRawGamesOnly(scrapedGames: RawScrapedGame[]): RawScrapedGame[] {
@@ -208,23 +261,41 @@ export async function scrapeListedGames(): Promise<LiveGame[]> {
   }
 }
 
-export function saveAllGames(scrapedGames: LiveGame[]): void {
+function clearLiveGameRecords(): void {
+  saveGamesToFile(
+    [],
+    '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
+  );
+  saveGamesToFile(
+    [],
+    '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
+  );
+}
+
+export async function resetAndReport(
+  discordClient: Discord.Client,
+  twitterClient: Twit,
+): Promise<void> {
   const timeKeeping = readTimeKeeping();
   const todaysDate = new Date().getDate();
 
-  if (timeKeeping.lastScrapedDay !== todaysDate) {
-    saveGamesToFile(
-      [],
-      '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
-    );
-    saveGamesToFile(
-      [],
-      '/Users/brocktillotson/workspace/97062-bot/src/liveGameLines.json',
-    );
-    clearBetsMade();
-    updateTimeKeeping(todaysDate);
-  }
+  const isANewDay = timeKeeping.lastScrapedDay !== todaysDate;
 
+  if (!isANewDay) {
+    return;
+  }
+  const scores = await scrapeLastNightsGames();
+  const bettingResults = calculateBettingResults(scores);
+  console.log(bettingResults);
+  // tweetResults(twitterClient, bettingResults);
+  // discordResults(discordClient, bettingResults);
+
+  clearLiveGameRecords();
+  clearBetsMade();
+  updateTimeKeeping(todaysDate);
+}
+
+export function saveAllGames(scrapedGames: LiveGame[]): void {
   const currentlySavedGames = readGamesFromFile(
     '/Users/brocktillotson/workspace/97062-bot/src/todaysGamesAtClose.json',
   );

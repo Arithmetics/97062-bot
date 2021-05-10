@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { LiveGame, readGamesFromFile } from './scrape';
+import { LiveGame, readGamesFromFile, CompleteGameScore } from './scrape';
 
 function matchGames(
   liveGame: LiveGame,
@@ -281,4 +281,84 @@ export function clearBetsMade(): void {
     '/Users/brocktillotson/workspace/97062-bot/src/overUnderBetsMade.json',
     JSON.stringify([]),
   );
+}
+
+type BettingResults = {
+  overUnderProfit: number;
+  atsProfit: number;
+};
+
+export function calculateBettingResults(
+  scores: CompleteGameScore[],
+): BettingResults {
+  const atsBets = loadPlacedBets();
+  const overUnderBets = loadPlacedOverUnderBets();
+
+  let unitsWonAts = 0;
+  let unitsLostAts = 0;
+  let unitsWonOU = 0;
+  let unitsLostOU = 0;
+
+  atsBets.forEach(ats => {
+    const score = scores.find(
+      s => s.awayTeam === ats.awayTeam && s.homeTeam === ats.homeTeam,
+    );
+
+    if (!score) {
+      console.log(`NO GAME SCORE FOUND FOR ${JSON.stringify(ats)}`);
+    }
+
+    const awayMargin = (score?.awayScore || 0) - (score?.homeScore || 0);
+    if (ats.currentAwayLine + awayMargin > 0) {
+      // away team covers
+      if (ats.choiceTeam === HomeOrAway.AWAY) {
+        unitsWonAts += ats.grade;
+      } else {
+        unitsLostAts += ats.grade;
+      }
+    } else if (ats.currentAwayLine + awayMargin === 0) {
+      // push - nothing
+    } else {
+      // home team covers
+      if (ats.choiceTeam === HomeOrAway.HOME) {
+        unitsWonAts += ats.grade;
+      } else {
+        unitsLostAts += ats.grade;
+      }
+    }
+  });
+
+  overUnderBets.forEach(ou => {
+    const score = scores.find(
+      s => s.awayTeam === ou.awayTeam && s.homeTeam === ou.homeTeam,
+    );
+
+    if (!score) {
+      console.log(`NO GAME SCORE FOUND FOR ${JSON.stringify(ou)}`);
+    }
+
+    const gameTotal = (score?.awayScore || 0) + (score?.homeScore || 0);
+    if (ou.currentTotalLine - gameTotal > 0) {
+      // under covers
+      if (ou.choicePick === OverOrUnder.UNDER) {
+        unitsWonOU += ou.grade;
+      } else {
+        unitsLostOU += ou.grade;
+      }
+    } else if (ou.currentTotalLine === gameTotal) {
+      // push - nothing
+    } else {
+      // over covers
+      if (ou.choicePick === OverOrUnder.OVER) {
+        unitsWonOU += ou.grade;
+      } else {
+        unitsLostOU += ou.grade;
+      }
+    }
+  });
+
+  return {
+    overUnderProfit: unitsWonOU * 0.9 - unitsLostOU,
+    atsProfit: unitsWonAts * 0.9 - unitsLostAts,
+  };
 }

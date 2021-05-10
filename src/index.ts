@@ -1,39 +1,45 @@
 import Discord from 'discord.js';
+import Twit from 'twit';
 import { setInterval } from 'timers';
 import {
   startUpClient,
   messageOutBets,
   messageOutOverUnderBets,
 } from './discord';
-import { scrapeListedGames, saveAllGames } from './scrape';
+import { resetAndReport, scrapeListedGames, saveAllGames } from './scrape';
 import {
   collectLiveBets,
   collectLiveUnderOverBets,
   saveBets,
   saveOverUnderBets,
 } from './bets';
-import { tweetBets, tweetOverUnderBets } from './twitter';
+import { startUpTwitterClient, tweetBets, tweetOverUnderBets } from './twitter';
 
 console.log('starting up bet bot!');
-const client = startUpClient();
+const discordClient = startUpClient();
+const twitterClient = startUpTwitterClient();
 
-async function runCycle(client: Discord.Client): Promise<void> {
+async function runCycle(
+  discordClient: Discord.Client,
+  twitterClient: Twit,
+): Promise<void> {
   console.log('scraping games', new Date().toLocaleTimeString());
   const games = await scrapeListedGames();
+  resetAndReport(discordClient, twitterClient);
   saveAllGames(games);
   const bets = collectLiveBets();
   const overUnderBets = collectLiveUnderOverBets();
   saveBets(bets);
   saveOverUnderBets(overUnderBets);
-  tweetBets(bets);
-  tweetOverUnderBets(overUnderBets);
-  messageOutBets(client, bets);
-  messageOutOverUnderBets(client, overUnderBets);
+  tweetBets(twitterClient, bets);
+  tweetOverUnderBets(twitterClient, overUnderBets);
+  messageOutBets(discordClient, bets);
+  messageOutOverUnderBets(discordClient, overUnderBets);
 }
 
-runCycle(client);
+runCycle(discordClient, twitterClient);
 
 const interval = 10 * 60 * 1000; // 10 minutes;
 setInterval(async () => {
-  runCycle(client);
+  runCycle(discordClient, twitterClient);
 }, interval);
