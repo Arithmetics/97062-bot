@@ -140,7 +140,21 @@ async function scrapeLastNightsGames(): Promise<CompleteGameScore[]> {
   try {
     const browser = await puppeteer.launch({});
     const page = await browser.newPage();
-    await page.goto('https://www.thescore.com/nba/events/date/2021-05-09');
+
+    const today = new Date();
+    const yesterday = new Date(today);
+
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const yesterdayDateString = `${yesterday.getFullYear()}-${'0' +
+      (yesterday.getMonth() + 1).toString().slice(-2)}-${'0' +
+      yesterday
+        .getDate()
+        .toString()
+        .slice(-2)}`;
+    await page.goto(
+      `https://www.thescore.com/nba/events/date/${yesterdayDateString}`,
+    );
     await page.waitForSelector('.col-xs-12');
     await new Promise(r => setTimeout(r, 2000));
     const content = await page.content();
