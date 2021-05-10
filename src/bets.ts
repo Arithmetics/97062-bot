@@ -77,7 +77,20 @@ export function saveBets(bets: LiveBet[]): void {
   const currentBets = JSON.parse(rawdata) as LiveBet[];
   fs.writeFileSync(
     '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
-    [...currentBets, ...bets],
+    JSON.stringify([...currentBets, ...bets]),
+  );
+}
+
+export function saveOverUnderBets(bets: LiveOverUnderBet[]): void {
+  const rawdata = fs.readFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/overUnderBetsMade.json',
+    'utf8',
+  );
+  const currentBets = JSON.parse(rawdata) as LiveOverUnderBet[];
+
+  fs.writeFileSync(
+    '/Users/brocktillotson/workspace/97062-bot/src/overUnderBetsMade.json',
+    JSON.stringify([...currentBets, ...bets]),
   );
 }
 
@@ -259,26 +272,13 @@ export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
   return filterAlreadyPlacedOverUnderBets(liveOverUnderBets);
 }
 
-export function saveOverUnderBets(bets: LiveOverUnderBet[]): void {
-  const rawdata = fs.readFileSync(
-    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
-    'utf8',
-  );
-  const currentBets = JSON.parse(rawdata) as LiveOverUnderBet[];
-
-  fs.writeFileSync(
-    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
-    [...currentBets, ...bets],
-  );
-}
-
 export function clearBetsMade(): void {
   fs.writeFileSync(
     '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
-    [],
+    JSON.stringify([]),
   );
   fs.writeFileSync(
-    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
-    [],
+    '/Users/brocktillotson/workspace/97062-bot/src/overUnderBetsMade.json',
+    JSON.stringify([]),
   );
 }

@@ -25,10 +25,10 @@ async function runCycle(client: Discord.Client): Promise<void> {
   const overUnderBets = collectLiveUnderOverBets();
   saveBets(bets);
   saveOverUnderBets(overUnderBets);
-  // tweetBets(bets);
-  // tweetOverUnderBets(overUnderBets);
-  // messageOutBets(client, bets);
-  // messageOutOverUnderBets(client, overUnderBets);
+  tweetBets(bets);
+  tweetOverUnderBets(overUnderBets);
+  messageOutBets(client, bets);
+  messageOutOverUnderBets(client, overUnderBets);
 }
 
 runCycle(client);
