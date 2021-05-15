@@ -3,7 +3,13 @@ import Discord from 'discord.js';
 import { haterRemarks } from './botResponses';
 import { ownerIds } from './botResponses';
 import { readGamesFromFile } from './scrape';
-import { LiveBet, HomeOrAway, LiveOverUnderBet, OverOrUnder } from './bets';
+import {
+  LiveBet,
+  HomeOrAway,
+  LiveOverUnderBet,
+  OverOrUnder,
+  BettingResults,
+} from './bets';
 
 const prefix = '!';
 
@@ -220,5 +226,46 @@ export function messageOutOverUnderBets(
     if (bets.length !== 0) {
       channel?.send({ embed: sendOverUnderBets(bets) });
     }
+  }
+}
+
+function profitsMessage(bettingResults: BettingResults): Discord.MessageEmbed {
+  const gameEmbed: Partial<Discord.MessageEmbed> = {
+    color: 0x0099ff,
+    title: 'Yesterdays results',
+    fields: [],
+  };
+
+  gameEmbed.fields?.push({
+    name: `ATS Profit`,
+    value: `${bettingResults.atsProfit.toFixed(2)}`,
+    inline: false,
+  });
+
+  gameEmbed.fields?.push({
+    name: `Over Under Profit`,
+    value: `${bettingResults.overUnderProfit.toFixed(2)}`,
+    inline: false,
+  });
+
+  gameEmbed.fields?.push({
+    name: `Volume`,
+    value: `${bettingResults.volume.toFixed(2)}`,
+    inline: false,
+  });
+
+  return gameEmbed as Discord.MessageEmbed;
+}
+
+export function discordResults(
+  client: Discord.Client,
+  bettingResults: BettingResults,
+): void {
+  const channel = client.channels.cache.find(
+    c => c.id === '675574196268564525',
+  );
+
+  if (channel?.isText()) {
+    channel?.send({ embed: profitsMessage(bettingResults) });
   }
 }

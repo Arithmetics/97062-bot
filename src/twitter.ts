@@ -2,6 +2,7 @@
 import Twit from 'twit';
 import { LiveBet, HomeOrAway, LiveOverUnderBet } from './bets';
 import { formatLine } from './discord';
+import { BettingResults } from './bets';
 
 export function startUpTwitterClient(): Twit {
   return new Twit({
@@ -73,6 +74,22 @@ export function tweetOverUnderBets(
     return;
   }
   const text = formatOverUnderBets(bets);
+  twitterClient.post('statuses/update', { status: text }, function(err) {
+    console.log(err);
+  });
+}
+
+export function tweetResults(
+  twitterClient: Twit,
+  bettingResults: BettingResults,
+): void {
+  const totalProfit = bettingResults.atsProfit + bettingResults.overUnderProfit;
+
+  const upOrDown = totalProfit > 0 ? 'up' : 'down';
+  const text = `Good morning. Bot was ${upOrDown} ${totalProfit.toFixed(
+    2,
+  )} units yesterday on ${bettingResults.volume.toFixed(2)} volume.`;
+
   twitterClient.post('statuses/update', { status: text }, function(err) {
     console.log(err);
   });

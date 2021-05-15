@@ -4,6 +4,9 @@ import fs from 'fs';
 import Discord from 'discord.js';
 import Twit from 'twit';
 
+import { tweetResults } from './twitter';
+import { discordResults } from './discord';
+
 import { clearBetsMade, calculateBettingResults } from './bets';
 
 const url = 'https://sports.oregonlottery.org/sports/basketball/nba';
@@ -146,12 +149,12 @@ async function scrapeLastNightsGames(): Promise<CompleteGameScore[]> {
 
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const yesterdayDateString = `${yesterday.getFullYear()}-${'0' +
-      (yesterday.getMonth() + 1).toString().slice(-2)}-${'0' +
-      yesterday
-        .getDate()
-        .toString()
-        .slice(-2)}`;
+    const yesterdayDateString = `${yesterday.getFullYear()}-${(
+      '0' + (yesterday.getMonth() + 1).toString()
+    ).slice(-2)}-${('0' + yesterday.getDate().toString()).slice(-2)}`;
+    console.log(
+      `scraping: https://www.thescore.com/nba/events/date/${yesterdayDateString}`,
+    );
     await page.goto(
       `https://www.thescore.com/nba/events/date/${yesterdayDateString}`,
     );
@@ -300,9 +303,10 @@ export async function resetAndReport(
   }
   const scores = await scrapeLastNightsGames();
   const bettingResults = calculateBettingResults(scores);
+  console.log('betting results from last night:');
   console.log(bettingResults);
-  // tweetResults(twitterClient, bettingResults);
-  // discordResults(discordClient, bettingResults);
+  tweetResults(twitterClient, bettingResults);
+  discordResults(discordClient, bettingResults);
 
   clearLiveGameRecords();
   clearBetsMade();

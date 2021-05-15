@@ -63,7 +63,7 @@ function loadPlacedBets(): LiveBet[] {
 
 function loadPlacedOverUnderBets(): LiveOverUnderBet[] {
   const rawdata = fs.readFileSync(
-    '/Users/brocktillotson/workspace/97062-bot/src/betsMade.json',
+    '/Users/brocktillotson/workspace/97062-bot/src/overUnderBetsMade.json',
     'utf8',
   );
   return JSON.parse(rawdata) as LiveOverUnderBet[];
@@ -214,7 +214,9 @@ function determineOverUnderBetGrade(
   minutesLeft: number,
 ): number {
   const expectedRate = closingTotalLine / 48; // pts / minute
-  const predictedFinalScore = currentTotalScore + minutesLeft * expectedRate;
+  // adding average 30 in to account for extra time
+  const predictedFinalScore =
+    currentTotalScore + (minutesLeft + 0.5) * expectedRate;
   return parseFloat((predictedFinalScore - currentTotalLine).toFixed(2));
 }
 
@@ -283,9 +285,10 @@ export function clearBetsMade(): void {
   );
 }
 
-type BettingResults = {
+export type BettingResults = {
   overUnderProfit: number;
   atsProfit: number;
+  volume: number;
 };
 
 export function calculateBettingResults(
@@ -298,6 +301,7 @@ export function calculateBettingResults(
   let unitsLostAts = 0;
   let unitsWonOU = 0;
   let unitsLostOU = 0;
+  let volume = 0;
 
   atsBets.forEach(ats => {
     const score = scores.find(
@@ -307,23 +311,40 @@ export function calculateBettingResults(
     if (!score) {
       console.log(`NO GAME SCORE FOUND FOR ${JSON.stringify(ats)}`);
     }
-
-    const awayMargin = (score?.awayScore || 0) - (score?.homeScore || 0);
-    if (ats.currentAwayLine + awayMargin > 0) {
-      // away team covers
-      if (ats.choiceTeam === HomeOrAway.AWAY) {
-        unitsWonAts += ats.grade;
+    if (score) {
+      const awayMargin = (score?.awayScore || 0) - (score?.homeScore || 0);
+      if (ats.currentAwayLine + awayMargin > 0) {
+        // away team covers
+        if (ats.choiceTeam === HomeOrAway.AWAY) {
+          console.log(
+            `adding won from ${ats.awayTeam} vs ${ats.homeTeam}, grade: ${ats.grade}`,
+          );
+          unitsWonAts += Math.abs(ats.grade);
+          volume += Math.abs(ats.grade);
+        } else {
+          console.log(
+            `adding lost from ${ats.awayTeam} vs ${ats.homeTeam}, grade: ${ats.grade}`,
+          );
+          unitsLostAts += Math.abs(ats.grade);
+          volume += Math.abs(ats.grade);
+        }
+      } else if (ats.currentAwayLine + awayMargin === 0) {
+        // push - nothing
       } else {
-        unitsLostAts += ats.grade;
-      }
-    } else if (ats.currentAwayLine + awayMargin === 0) {
-      // push - nothing
-    } else {
-      // home team covers
-      if (ats.choiceTeam === HomeOrAway.HOME) {
-        unitsWonAts += ats.grade;
-      } else {
-        unitsLostAts += ats.grade;
+        // home team covers
+        if (ats.choiceTeam === HomeOrAway.HOME) {
+          console.log(
+            `adding won from ${ats.awayTeam} vs ${ats.homeTeam}, grade: ${ats.grade}`,
+          );
+          unitsWonAts += Math.abs(ats.grade);
+          volume += Math.abs(ats.grade);
+        } else {
+          console.log(
+            `adding lost from ${ats.awayTeam} vs ${ats.homeTeam}, grade: ${ats.grade}`,
+          );
+          unitsLostAts += Math.abs(ats.grade);
+          volume += Math.abs(ats.grade);
+        }
       }
     }
   });
@@ -335,24 +356,40 @@ export function calculateBettingResults(
 
     if (!score) {
       console.log(`NO GAME SCORE FOUND FOR ${JSON.stringify(ou)}`);
-    }
-
-    const gameTotal = (score?.awayScore || 0) + (score?.homeScore || 0);
-    if (ou.currentTotalLine - gameTotal > 0) {
-      // under covers
-      if (ou.choicePick === OverOrUnder.UNDER) {
-        unitsWonOU += ou.grade;
-      } else {
-        unitsLostOU += ou.grade;
-      }
-    } else if (ou.currentTotalLine === gameTotal) {
-      // push - nothing
     } else {
-      // over covers
-      if (ou.choicePick === OverOrUnder.OVER) {
-        unitsWonOU += ou.grade;
+      const gameTotal = (score?.awayScore || 0) + (score?.homeScore || 0);
+      if (ou.currentTotalLine - gameTotal > 0) {
+        // under covers
+        if (ou.choicePick === OverOrUnder.UNDER) {
+          console.log(
+            `adding OU won from ${ou.awayTeam} vs ${ou.homeTeam}, grade: ${ou.grade}`,
+          );
+          unitsWonOU += Math.abs(ou.grade);
+          volume += Math.abs(ou.grade);
+        } else {
+          console.log(
+            `adding OU lost from ${ou.awayTeam} vs ${ou.homeTeam}, grade: ${ou.grade}`,
+          );
+          unitsLostOU += Math.abs(ou.grade);
+          volume += Math.abs(ou.grade);
+        }
+      } else if (ou.currentTotalLine === gameTotal) {
+        // push - nothing
       } else {
-        unitsLostOU += ou.grade;
+        // over covers
+        if (ou.choicePick === OverOrUnder.OVER) {
+          console.log(
+            `adding OU won from ${ou.awayTeam} vs ${ou.homeTeam}, grade: ${ou.grade}`,
+          );
+          unitsWonOU += Math.abs(ou.grade);
+          volume += Math.abs(ou.grade);
+        } else {
+          console.log(
+            `adding OU lost from ${ou.awayTeam} vs ${ou.homeTeam}, grade: ${ou.grade}`,
+          );
+          unitsLostOU += Math.abs(ou.grade);
+          volume += Math.abs(ou.grade);
+        }
       }
     }
   });
@@ -360,5 +397,6 @@ export function calculateBettingResults(
   return {
     overUnderProfit: unitsWonOU * 0.9 - unitsLostOU,
     atsProfit: unitsWonAts * 0.9 - unitsLostAts,
+    volume,
   };
 }
