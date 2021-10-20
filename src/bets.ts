@@ -169,11 +169,11 @@ export function collectLiveBets(): LiveBet[] {
         `found a bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade}`,
       );
 
-      if (betGrade > 4.9) {
+      if (betGrade > 5.5) {
         potentialLiveBet.choiceTeam = HomeOrAway.HOME;
         liveBets.push(potentialLiveBet);
       }
-      if (betGrade < -4.9) {
+      if (betGrade < -5.5) {
         potentialLiveBet.choiceTeam = HomeOrAway.AWAY;
         liveBets.push(potentialLiveBet);
       }
@@ -261,11 +261,11 @@ export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
         `found a over under bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade} with ${minutesLeft} left in the game`,
       );
 
-      if (betGrade > 8) {
+      if (betGrade > 7.5) {
         potentialLiveBet.choicePick = OverOrUnder.OVER;
         liveOverUnderBets.push(potentialLiveBet);
       }
-      if (betGrade < -8) {
+      if (betGrade < -7.5) {
         potentialLiveBet.choicePick = OverOrUnder.UNDER;
         liveOverUnderBets.push(potentialLiveBet);
       }

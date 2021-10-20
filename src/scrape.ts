@@ -305,8 +305,8 @@ export async function resetAndReport(
   const bettingResults = calculateBettingResults(scores);
   console.log('betting results from last night:');
   console.log(bettingResults);
-  tweetResults(twitterClient, bettingResults);
-  discordResults(discordClient, bettingResults);
+  // tweetResults(twitterClient, bettingResults);
+  // discordResults(discordClient, bettingResults);
 
   clearLiveGameRecords();
   clearBetsMade();
