@@ -304,9 +304,11 @@ export function calculateBettingResults(
   let volume = 0;
 
   atsBets.forEach(ats => {
-    const score = scores.find(
-      s => s.awayTeam === ats.awayTeam && s.homeTeam === ats.homeTeam,
-    );
+    const score = scores.find(s => {
+      return (
+        ats.awayTeam.includes(s.awayTeam) && ats.homeTeam.includes(s.homeTeam)
+      );
+    });
 
     if (!score) {
       console.log(`NO GAME SCORE FOUND FOR ${JSON.stringify(ats)}`);

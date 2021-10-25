@@ -3,6 +3,7 @@ import cheerio from 'cheerio';
 import fs from 'fs';
 import Discord from 'discord.js';
 import Twit from 'twit';
+import got from 'got';
 
 import { tweetResults } from './twitter';
 import { discordResults } from './discord';
@@ -10,6 +11,23 @@ import { discordResults } from './discord';
 import { clearBetsMade, calculateBettingResults } from './bets';
 
 const url = 'https://sports.oregonlottery.org/sports/basketball/nba';
+
+type ESPNCompetitor = {
+  team: { shortDisplayName: string };
+  score: number;
+};
+
+type ESPNCompetition = {
+  competitors: ESPNCompetitor[];
+};
+
+type ESPNEvent = {
+  competitions: ESPNCompetition[];
+};
+
+export type ESPNResponse = {
+  events: ESPNEvent[];
+};
 
 export type LiveGame = {
   awayTeam: string;
@@ -112,57 +130,42 @@ function parseGames(html: string): RawScrapedGame[] {
   return availableGames;
 }
 
-function parseLastNightsGames(html: string): CompleteGameScore[] {
-  const games = [];
-  const $ = cheerio.load(html);
-  const gameBlocks = $('[class^="EventCard__eventCardContainer"]');
+function parseLastNightsGames(espnResponse: ESPNResponse): CompleteGameScore[] {
+  const games: CompleteGameScore[] = [];
 
-  for (let i = 0; i < gameBlocks.length; i++) {
-    try {
-      const block = gameBlocks[i];
-
-      const teamNames = $(block).find('[class^="EventCard__teamName"]');
-
-      const scores = $(block).find('[class^="EventCard__scoreColumn"]');
-
+  espnResponse.events.forEach(event => {
+    event.competitions.forEach(competition => {
       games.push({
-        awayTeam: $(teamNames[0]).text(),
-        awayScore: parseInt($(scores[0]).text(), 10),
-        homeTeam: $(teamNames[1]).text(),
-        homeScore: parseInt($(scores[1]).text(), 10),
+        awayTeam: competition.competitors[0].team.shortDisplayName,
+        awayScore: competition.competitors[0].score,
+        homeTeam: competition.competitors[1].team.shortDisplayName,
+        homeScore: competition.competitors[1].score,
       });
-    } catch (e) {
-      console.log(e);
-    }
-  }
+    });
+  });
 
   return games;
 }
 
 async function scrapeLastNightsGames(): Promise<CompleteGameScore[]> {
   try {
-    const browser = await puppeteer.launch({});
-    const page = await browser.newPage();
-
     const today = new Date();
     const yesterday = new Date(today);
 
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const yesterdayDateString = `${yesterday.getFullYear()}-${(
+    const yesterdayDateString = `${yesterday.getFullYear()}${(
       '0' + (yesterday.getMonth() + 1).toString()
-    ).slice(-2)}-${('0' + yesterday.getDate().toString()).slice(-2)}`;
-    console.log(
-      `scraping: https://www.thescore.com/nba/events/date/${yesterdayDateString}`,
-    );
-    await page.goto(
-      `https://www.thescore.com/nba/events/date/${yesterdayDateString}`,
-    );
-    await page.waitForSelector('.col-xs-12');
-    await new Promise(r => setTimeout(r, 2000));
-    const content = await page.content();
-    await browser.close();
-    return parseLastNightsGames(content);
+    ).slice(-2)}${('0' + yesterday.getDate().toString()).slice(-2)}`;
+
+    const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${yesterdayDateString}`;
+    console.log(`scraping: ${url}`);
+
+    const response = await got(url, {});
+
+    const data = JSON.parse(response.body) as ESPNResponse;
+
+    return parseLastNightsGames(data);
   } catch (e) {
     console.log('Error grading!');
     console.log(e);

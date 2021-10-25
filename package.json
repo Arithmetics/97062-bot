@@ -43,6 +43,7 @@
     "csv-writer": "^1.6.0",
     "discord.js": "^12.5.3",
     "eslint-plugin-jest": "^24.1.0",
+    "got": "^11.8.2",
     "jest": "^26.5.3",
     "puppeteer": "^8.0.0",
     "ts-jest": "^26.4.1",
