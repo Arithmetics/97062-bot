@@ -136,10 +136,10 @@ function parseLastNightsGames(espnResponse: ESPNResponse): CompleteGameScore[] {
   espnResponse.events.forEach(event => {
     event.competitions.forEach(competition => {
       games.push({
-        awayTeam: competition.competitors[0].team.shortDisplayName,
-        awayScore: competition.competitors[0].score,
-        homeTeam: competition.competitors[1].team.shortDisplayName,
-        homeScore: competition.competitors[1].score,
+        awayTeam: competition.competitors[1].team.shortDisplayName,
+        awayScore: competition.competitors[1].score,
+        homeTeam: competition.competitors[0].team.shortDisplayName,
+        homeScore: competition.competitors[0].score,
       });
     });
   });
@@ -308,8 +308,8 @@ export async function resetAndReport(
   const bettingResults = calculateBettingResults(scores);
   console.log('betting results from last night:');
   console.log(bettingResults);
-  // tweetResults(twitterClient, bettingResults);
-  // discordResults(discordClient, bettingResults);
+  tweetResults(twitterClient, bettingResults);
+  discordResults(discordClient, bettingResults);
 
   clearLiveGameRecords();
   clearBetsMade();

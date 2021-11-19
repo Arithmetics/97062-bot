@@ -261,11 +261,11 @@ export function collectLiveUnderOverBets(): LiveOverUnderBet[] {
         `found a over under bet ${liveGame.awayTeam} vs ${liveGame.homeTeam} grade is: ${betGrade} with ${minutesLeft} left in the game`,
       );
 
-      if (betGrade > 7.5) {
+      if (betGrade > 6.5) {
         potentialLiveBet.choicePick = OverOrUnder.OVER;
         liveOverUnderBets.push(potentialLiveBet);
       }
-      if (betGrade < -7.5) {
+      if (betGrade < -6.5) {
         potentialLiveBet.choicePick = OverOrUnder.UNDER;
         liveOverUnderBets.push(potentialLiveBet);
       }
